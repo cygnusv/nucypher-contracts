@@ -41,5 +41,16 @@ jobs:
     - name: Install Requirements
       run: pip install -r requirements.txt
 
+    - name: Install contract dependencies 
+      run: |
+        brownie pm install OpenZeppelin/openzeppelin-contracts@4.4.2
+        brownie pm install OpenZeppelin/openzeppelin-contracts-upgradeable@4.4.2
+
+    - name: List dependencies
+      run: brownie pm list
+
+    - name: Compile
+      run: brownie compile --all
+
     - name: Run Tests
       run: brownie test
