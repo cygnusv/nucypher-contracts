@@ -134,15 +134,16 @@ contract Coordinator is Ownable {
         ritual.dkgSize = uint32(nodes.length);
         ritual.initTimestamp = uint32(block.timestamp);
 
-        address previousNode = nodes[0];
-        ritual.participant[0].node = previousNode;
-        address currentNode;
-        for(uint256 i=1; i < nodes.length; i++){
-            currentNode = nodes[i];
-            ritual.participant[i].node = currentNode;
+        address previousNode = address(0);
+        for(uint256 i=0; i < nodes.length; i++){
+            Participant storage newParticipant = ritual.participant.push();
+            address currentNode = nodes[i];
+            newParticipant.node = currentNode;
+            require(previousNode < currentNode, "Nodes must be sorted");
             previousNode = currentNode;
             // TODO: Check nodes are eligible (staking, etc)
         }
+        // TODO: Compute cohort fingerprint as hash(nodes)
 
         emit StartRitual(id, msg.sender, nodes);
         emit StartTranscriptRound(id);
