@@ -79,7 +79,7 @@ contract Coordinator is Ownable {
             return RitualState.NON_INITIATED;
         } else if (ritual.publicKey[0] != 0x0){ // TODO: Improve check
             return RitualState.FINALIZED;
-        } else if (!ritual.aggregationMismatch){
+        } else if (ritual.aggregationMismatch){
             return RitualState.INVALID;
         } else if (block.timestamp > deadline){
             return RitualState.TIMEOUT;
