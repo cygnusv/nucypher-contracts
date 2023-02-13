@@ -44,10 +44,9 @@ contract Coordinator is Ownable {
 
     // TODO: Optimize layout
     struct Ritual {
-        uint32 id;
+        uint32 id;  // TODO: Redundant? ID is index of rituals array
         address initiator;
         uint32 dkgSize;
-        uint32 threshold;
         uint32 initTimestamp;
         uint32 totalTranscripts;
         uint32 totalAggregations;
@@ -68,7 +67,7 @@ contract Coordinator is Ownable {
         maxDkgSize = _maxDkgSize;
     }
 
-    function getRitualState(uint256 ritualID) external view returns (RitualState){
+    function getRitualState(uint256 ritualId) external view returns (RitualState){
         // TODO: restrict to ritualID < rituals.length?
         return getRitualState(rituals[ritualId]);
     }
@@ -78,7 +77,7 @@ contract Coordinator is Ownable {
         uint32 deadline = t0 + timeout;
         if(t0 == 0){
             return RitualState.NON_INITIATED;
-        } else if (ritual.publicKey != 0x0){ // TODO: Improve check
+        } else if (ritual.publicKey[0] != 0x0){ // TODO: Improve check
             return RitualState.FINALIZED;
         } else if (!ritual.aggregationMismatch){
             return RitualState.INVALID;
@@ -132,7 +131,6 @@ contract Coordinator is Ownable {
         Ritual storage ritual = rituals.push();
         ritual.id = id;  // TODO: Possibly redundant
         ritual.initiator = msg.sender;  // TODO: Consider sponsor model
-        ritual.threshold = threshold;  // TODO?
         ritual.dkgSize = uint32(nodes.length);
         ritual.initTimestamp = uint32(block.timestamp);
 
@@ -196,7 +194,7 @@ contract Coordinator is Ownable {
         // nodes commit to their aggregation result
         bytes32 aggregatedTranscriptDigest = keccak256(aggregatedTranscript);
         ritual.participant[nodeIndex].aggregated = true;
-        emit AggregationPosted(ritualId, msg.sender, aggregatedTranscript);
+        emit AggregationPosted(ritualId, msg.sender, aggregatedTranscriptDigest);
         
         if (ritual.aggregatedTranscriptHash != aggregatedTranscriptDigest){
             ritual.aggregationMismatch = true;
