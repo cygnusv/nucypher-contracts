@@ -162,13 +162,8 @@ contract Coordinator is Ownable {
         Participant storage participant = getParticipantFromProvider(ritual, provider);
 
         require(
-<<<<<<< HEAD
             application.authorizedStake(provider) > 0,
             "Not enough authorization"
-=======
-            applicationInterface.authorizedStake(participant.node) > 0,
-            "Staking provider not authorized for application"
->>>>>>> 6a117d4 (Use CBD app to get provider from operator. Get rid of nodeIndex as param)
         );
         require(
             participant.transcript.length == 0,
@@ -203,13 +198,8 @@ contract Coordinator is Ownable {
         address provider = application.stakingProviderFromOperator(msg.sender);
         Participant storage participant = getParticipantFromProvider(ritual, provider);
         require(
-<<<<<<< HEAD
             application.authorizedStake(provider) > 0,
             "Not enough authorization"
-=======
-            applicationInterface.authorizedStake(participant.node) > 0,
-            "Staking provider not authorized for application"
->>>>>>> 6a117d4 (Use CBD app to get provider from operator. Get rid of nodeIndex as param)
         );
 
         require(
@@ -220,11 +210,7 @@ contract Coordinator is Ownable {
         // nodes commit to their aggregation result
         bytes32 aggregatedTranscriptDigest = keccak256(aggregatedTranscript);
         participant.aggregated = true;
-<<<<<<< HEAD
         emit AggregationPosted(ritualId, provider, aggregatedTranscriptDigest);
-=======
-        emit AggregationPosted(ritualId, provider, aggregatedTranscriptCommittment);
->>>>>>> 6a117d4 (Use CBD app to get provider from operator. Get rid of nodeIndex as param)
 
         if (ritual.aggregatedTranscript.length == 0) {
             ritual.aggregatedTranscript = aggregatedTranscript;
