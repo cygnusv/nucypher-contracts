@@ -38,6 +38,7 @@ contract CoordinatorForBetaProgramInitiatorMock {
     }
 
     function getRitualInitiationCost(
+        uint16 _size,
         address[] calldata _providers,
         uint32 _duration
     ) public view returns (uint256) {
@@ -61,6 +62,7 @@ contract CoordinatorForBetaProgramInitiatorMock {
     }
 
     function initiateRitual(
+        uint16 _size,
         address[] calldata _providers,
         address _authority,
         uint32 _duration,
@@ -74,7 +76,7 @@ contract CoordinatorForBetaProgramInitiatorMock {
         ritual.accessController = accessController;
         ritual.state = Coordinator.RitualState.DKG_AWAITING_TRANSCRIPTS;
 
-        ritual.ritualCost = getRitualInitiationCost(_providers, _duration);
+        ritual.ritualCost = getRitualInitiationCost(_size, _providers, _duration);
         currency.safeTransferFrom(msg.sender, address(this), ritual.ritualCost);
 
         return uint32(rituals.length - 1);

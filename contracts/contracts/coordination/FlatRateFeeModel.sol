@@ -20,13 +20,16 @@ contract FlatRateFeeModel is IFeeModel {
     }
 
     function getRitualInitiationCost(
+        uint16 size,
         address[] calldata providers,
         uint32 duration
     ) public view returns (uint256) {
-        uint256 size = providers.length;
-        require(duration > 0, "Invalid ritual duration");
         require(size > 0, "Invalid ritual size");
-        return feeRatePerSecond * size * duration;
+        require(duration > 0, "Invalid ritual duration");
+        uint256 buffer = providers.length - size;  // Implicitly requires that providers.length >= size     
+        uint256 baseFee = feeRatePerSecond * size * duration;
+        uint256 bufferFee = feeRatePerSecond * buffer * 1 days;
+        return baseFee + bufferFee;
     }
 
     // TODO: Validate if this is enough to remove griefing attacks

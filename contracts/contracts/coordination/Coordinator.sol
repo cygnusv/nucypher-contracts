@@ -258,6 +258,7 @@ contract Coordinator is Initializable, AccessControlDefaultAdminRulesUpgradeable
     }
 
     function initiateRitual(
+        uint16 size,
         address[] calldata providers,
         address authority,
         uint32 duration,
@@ -269,22 +270,23 @@ contract Coordinator is Initializable, AccessControlDefaultAdminRulesUpgradeable
             isInitiationPublic || hasRole(INITIATOR_ROLE, msg.sender),
             "Sender can't initiate ritual"
         );
-        uint16 length = uint16(providers.length);
-        require(2 <= length && length <= maxDkgSize, "Invalid number of nodes");
+        // TODO: validate that buffer size is acceptable (e.g., buffer = 10% of size)
+        require(size <= providers.length, "Not enough providers for DKG size");
+        require(2 <= size && size <= maxDkgSize, "Invalid DKG size");
         require(duration >= 24 hours, "Invalid ritual duration"); // TODO: Define minimum duration #106
 
         uint32 id = uint32(rituals.length);
         Ritual storage ritual = rituals.push();
         ritual.initiator = msg.sender;
         ritual.authority = authority;
-        ritual.dkgSize = length;
-        ritual.threshold = getThresholdForRitualSize(length);
+        ritual.dkgSize = size;
+        ritual.threshold = getThresholdForRitualSize(size);
         ritual.initTimestamp = uint32(block.timestamp);
         ritual.endTimestamp = ritual.initTimestamp + duration;
         ritual.accessController = accessController;
 
         address previous = address(0);
-        for (uint256 i = 0; i < length; i++) {
+        for (uint256 i = 0; i < size; i++) {
             Participant storage newParticipant = ritual.participant.push();
             address current = providers[i];
             // Make sure that current provider has already set their public key
@@ -302,7 +304,7 @@ contract Coordinator is Initializable, AccessControlDefaultAdminRulesUpgradeable
             previous = current;
         }
 
-        processRitualPayment(id, providers, duration);
+        processRitualPayment(id, size, providers, duration);
 
         emit StartRitual(id, ritual.authority, providers);
         return id;
@@ -544,10 +546,11 @@ contract Coordinator is Initializable, AccessControlDefaultAdminRulesUpgradeable
 
     function processRitualPayment(
         uint32 ritualId,
+        uint16 size,
         address[] calldata providers,
         uint32 duration
     ) internal {
-        uint256 ritualCost = getRitualInitiationCost(providers, duration);
+        uint256 ritualCost = getRitualInitiationCost(size, providers, duration);
         require(ritualCost > 0, "Invalid ritual cost");
         totalPendingFees += ritualCost;
         pendingFees[ritualId] = ritualCost;

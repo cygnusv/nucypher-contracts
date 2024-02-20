@@ -61,12 +61,13 @@ contract BetaProgramInitiator {
     }
 
     function registerInitiationRequest(
+        uint16 size,
         address[] calldata providers,
         address authority,
         uint32 duration,
         IEncryptionAuthorizer accessController
     ) external returns (uint256 requestIndex) {
-        uint256 ritualCost = coordinator.getRitualInitiationCost(providers, duration);
+        uint256 ritualCost = coordinator.getRitualInitiationCost(size, providers, duration);
 
         requestIndex = requests.length;
         InitiationRequest storage request = requests.push();
@@ -119,11 +120,13 @@ contract BetaProgramInitiator {
 
         address[] memory providers = request.providers;
         uint32 duration = request.duration;
-        uint256 ritualCost = coordinator.getRitualInitiationCost(providers, duration);
+        uint16 size = request.size;
+        uint256 ritualCost = coordinator.getRitualInitiationCost(size, providers, duration);
         require(ritualCost == request.payment, "Ritual initiation cost has changed");
         currency.approve(address(coordinator), ritualCost);
 
         uint32 ritualId = coordinator.initiateRitual(
+            size,
             providers,
             request.authority,
             duration,
