@@ -55,30 +55,51 @@ contract Coordinator is Initializable, AccessControlDefaultAdminRulesUpgradeable
         EXPIRED
     }
 
-    struct Participant {
-        address provider;
-        bool aggregated;
+    // NOTE: Participant struct size and layout must remain backwards-compatible
+    // See https://github.com/nucypher/nucypher-contracts/issues/247
+    struct Participant {    // 3 EVM slots
+        // Slot 1: 32 bytes (first 21 bytes used)
+        address provider;   // 20 B
+        bool aggregated;    // 1 B
+        // unassigned       // 11 B
+        
+        // Slot 2: 32 bytes
         bytes transcript;
+        
+        // Slot 3: 32 bytes
         bytes decryptionRequestStaticKey;
-        // Note: Adjust __postSentinelGap size if this struct's size changes
     }
 
-    struct Ritual {
-        // NOTE: changing the order here affects nucypher/nucypher: CoordinatorAgent
-        address initiator;
-        uint32 initTimestamp;
-        uint32 endTimestamp;
-        uint16 totalTranscripts;
-        uint16 totalAggregations;
-        //
-        address authority;
-        uint16 dkgSize;
-        uint16 threshold;
-        bool aggregationMismatch;
-        //
-        IEncryptionAuthorizer accessController;
-        BLS12381.G1Point publicKey;
+    // NOTE: Ritual struct size and layout must remain backwards-compatible
+    struct Ritual {     // 7 EVM slots
+        // NOTE: changing the layout here affects nucypher/nucypher: CoordinatorAgent
+
+        // Slot 1: 32 bytes
+        address initiator;          // 20 B
+        uint32 initTimestamp;       // 4 B
+        uint32 endTimestamp;        // 4 B
+        uint16 totalTranscripts;    // 2 B
+        uint16 totalAggregations;   // 2 B
+        
+        // Slot 2: 32 bytes (first 25 bytes used)
+        address authority;          // 20 B
+        uint16 dkgSize;             // 2 B
+        uint16 threshold;           // 2 B
+        bool aggregationMismatch;   // 1 B
+        // unassigned               // 7 B
+
+        // Slot 3: 32 bytes (first 20 bytes used)
+        IEncryptionAuthorizer accessController; // 20 B
+        // unassigned               // 12 B
+
+        // Slot 4 & 5: 32 bytes each
+        BLS12381.G1Point publicKey; // 48 B
+        // unassigned               // 16 B
+
+        // Slot 6: 32 bytes
         bytes aggregatedTranscript;
+
+        // Slot 7: 32 bytes
         Participant[] participant;
     }
 
