@@ -16,7 +16,7 @@ PROVIDER_URL = os.environ.get("PROVIDER_URL")
 PRIVATE_KEY = os.environ.get("PRIVATE_KEY")
 
 
-MAX_NODES = 10
+MAX_NODES = 4
 NUCYPHER_DOMAIN = "lynx"
 CHAIN = "80002"
 PORTER_ENDPOINT = f"https://porter-{NUCYPHER_DOMAIN}.nucypher.community"
@@ -24,7 +24,7 @@ PORTER_ENDPOINT = f"https://porter-{NUCYPHER_DOMAIN}.nucypher.community"
 with open(f"deployment/artifacts/{NUCYPHER_DOMAIN}.json", "r") as f:
     registry = json.load(f)
 
-SUBSCRIPTION_CONTRACT_ADDRESS = registry[CHAIN]["BqETHSubscription"]["address"]
+SUBSCRIPTION_CONTRACT_ADDRESS = "0xcc0F4FdB5740c7de0C467f0Cc489680C6689825a" # registry[CHAIN]["BqETHSubscription"]["address"]
 SUBSCRIPTION_CONTRACT_ABI = registry[CHAIN]["BqETHSubscription"]["abi"]
 ERC20_CONTRACT_ADDRESS = registry[CHAIN][NUCYPHER_DOMAIN.title() + "RitualToken"]["address"]
 ERC20_CONTRACT_ABI = registry[CHAIN][NUCYPHER_DOMAIN.title() + "RitualToken"]["abi"]
@@ -145,7 +145,7 @@ def initiate_ritual(
 
 if __name__ == "__main__":
     ritual_id = 1
-    num_nodes = 2
+    num_nodes = 4
     encryptor_slots = 2
     extra_encryptor_slots = 1
     w3, account, nonce = setup_connections()
@@ -166,8 +166,11 @@ if __name__ == "__main__":
     ).call()
 
     approve_erc20_transfer(erc20_contract, account, nonce, base_fees, encryptor_fees)
-    pay_for_subscription_and_slots(subscription_contract, account, nonce, encryptor_slots)
-    pay_for_new_slots(subscription_contract, account, nonce, extra_encryptor_slots)
+    input("Press Enter to continue...")
+    pay_for_subscription_and_slots(subscription_contract, account, nonce + 1, encryptor_slots)
+    input("Press Enter to continue...")
+    pay_for_new_slots(subscription_contract, account, nonce + 2, extra_encryptor_slots)
+    input("Press Enter to continue...")
     initiate_ritual(
-        coordinator_contract, account, nonce, subscription_contract, ritual_id, num_nodes
+        coordinator_contract, account, nonce + 3, subscription_contract, ritual_id, num_nodes
     )
